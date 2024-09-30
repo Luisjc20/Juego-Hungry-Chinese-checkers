@@ -128,50 +128,37 @@ class Greedy1BotPlayer(Player):
                             smallestStartY = start_coor[1]
         return [subj_to_obj_coor(start_coor, self.playerNum), subj_to_obj_coor(end_coor, self.playerNum)]
 
-class Greedy2BotPlayer(Player):
-    '''Siempre encuentra un movimiento que salta a través de la distancia máxima (dest[1] - coor[1])'''
+class BotPrimeroElMejor(Player):
+    '''Siempre encuentra el primer movimiento disponible, priorizando los movimientos hacia delante.'''
     def __init__(self):
         super().__init__()
 
     def pickMove(self, g: Game):
-        '''devuelve [start_coor, end_coor] en coordenadas objetivas\n
-        return [subj_to_obj_coor(start_coor, self.playerNum), subj_to_obj_coor(end_coor, self.playerNum)]'''
+        '''devuelve [start_coor, end_coor] en coordenadas objetivas'''
         moves = g.allMovesDict(self.playerNum)
-        
         forwardMoves = dict()
         sidewaysMoves = dict()
         start_coor = ()
         end_coor = ()
-        max_dist = 0
-        #Movimientos hacia adelante y hacia los lados
+
+        # Split moves into forward and sideways
         for coor in moves:
-            if moves[coor] != []: forwardMoves[coor] = []; sidewaysMoves[coor] = []
-            else: continue
-            for dest in moves[coor]:
-                if dest[1] > coor[1]: forwardMoves[coor].append(dest)
-                if dest[1] == coor[1]: sidewaysMoves[coor].append(dest)
-        for coor in list(forwardMoves):
-            if forwardMoves[coor] == []: del forwardMoves[coor]
-        for coor in list(sidewaysMoves):
-            if sidewaysMoves[coor] == []: del sidewaysMoves[coor]
-        #si adelante está vacío, muévete de lado
-        if len(forwardMoves) == 0:
-            start_coor = random.choice(list(sidewaysMoves))
-            end_coor = random.choice(sidewaysMoves[start_coor])
-            return [subj_to_obj_coor(start_coor, self.playerNum), subj_to_obj_coor(end_coor, self.playerNum)]
-        #adelante: distancia máxima
-        for coor in forwardMoves:
-            for dest in forwardMoves[coor]:
-                if start_coor == () and end_coor == ():
-                    start_coor = coor; end_coor = dest
-                    max_dist = end_coor[1] - start_coor[1]
-                else:
-                    dist = dest[1] - coor[1]
-                    if dist > max_dist:
-                        max_dist = dist; start_coor = coor; end_coor = dest
-                    elif dist == max_dist:
-                        #prefiere mover la pieza que está más atrás
-                        if dest[1] < end_coor[1]: max_dist = dist; start_coor = coor; end_coor = dest
+            if moves[coor] != []:
+                for dest in moves[coor]:
+                    if dest[1] > coor[1]:  # Forward move
+                        forwardMoves.setdefault(coor, []).append(dest)
+                    if dest[1] == coor[1]:  # Sideways move
+                        sidewaysMoves.setdefault(coor, []).append(dest)
+
+        # Check for forward moves first
+        if forwardMoves:
+            start_coor = next(iter(forwardMoves))  # Get the first key (start coordinate)
+            end_coor = forwardMoves[start_coor][0]  # Get the first destination
+        else:  # If no forward moves, look for sideways moves
+            if sidewaysMoves:
+                start_coor = next(iter(sidewaysMoves))  # Get the first key (start coordinate)
+                end_coor = sidewaysMoves[start_coor][0]  # Get the first destination
+
         return [subj_to_obj_coor(start_coor, self.playerNum), subj_to_obj_coor(end_coor, self.playerNum)]
 
 class HumanPlayer(Player):

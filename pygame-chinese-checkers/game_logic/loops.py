@@ -23,7 +23,7 @@ class LoopController:
         self.playerList = [
             HumanPlayer(),
             Greedy1BotPlayer(),
-            Greedy2BotPlayer()
+            BotPrimeroElMejor()
         ]
         pygame.event.set_allowed([QUIT, MOUSEBUTTONDOWN, MOUSEBUTTONUP])
 
@@ -33,7 +33,7 @@ class LoopController:
             self.playerList = [
                 HumanPlayer(),
                 Greedy1BotPlayer(),
-                Greedy2BotPlayer()
+                BotPrimeroElMejor()
             ]
             pygame.event.set_allowed([QUIT, MOUSEBUTTONDOWN, MOUSEBUTTONUP])
             self.filePath = False
