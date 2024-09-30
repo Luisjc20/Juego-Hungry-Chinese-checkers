@@ -304,41 +304,40 @@ class LoopController:
             appWidth * 0.875, appHeight * 0.625)
         grid = QtWidgets.QGridLayout(box)
         #
-        label_pNum = QtWidgets.QLabel(Form)
-        label_pNum.setText("Número de jugadores")
-        rButton_2P = QtWidgets.QRadioButton(Form)
-        rButton_2P.setText('2')
-        rButton_2P.toggled.connect(
-            lambda: label_p3Type.setStyleSheet("color: #878787;"))
-        rButton_2P.toggled.connect(
-            lambda: cBox_p3.setDisabled(True))
-        rButton_2P.toggled.connect(
-            lambda: setItem(self.playerList, 2, None))
+        #label_pNum = QtWidgets.QLabel(Form)
+        #label_pNum.setText("Número de jugadores")
+        #rButton_2P = QtWidgets.QRadioButton(Form)
+        #rButton_2P.setText('2')
+        #rButton_2P.toggled.connect(
+        #    lambda: label_p3Type.setStyleSheet("color: #878787;"))
+        #rButton_2P.toggled.connect(
+        #    lambda: cBox_p3.setDisabled(True))
+        #rButton_2P.toggled.connect(
+        #    lambda: setItem(self.playerList, 2, None))
         
-        rButton_3P = QtWidgets.QRadioButton(Form)
-        rButton_3P.setText('3')
-        rButton_3P.setChecked(True)
-        rButton_3P.toggled.connect(
-            lambda: label_p3Type.setStyleSheet("color: #000000;"))
-        rButton_3P.toggled.connect(
-            lambda: cBox_p3.setDisabled(False))
-        rButton_3P.toggled.connect(
-            lambda: setItem(self.playerList, 2, 
-            self.playerTypes[cBox_p3.currentText()]()))
+        #rButton_3P = QtWidgets.QRadioButton(Form)
+       # rButton_3P.setText('3')
+        #rButton_3P.setChecked(True)
+        #rButton_3P.toggled.connect(
+        #    lambda: label_p3Type.setStyleSheet("color: #000000;"))
+        #rButton_3P.toggled.connect(
+        #    lambda: cBox_p3.setDisabled(False))
+        #rButton_3P.toggled.connect(
+        #    lambda: setItem(self.playerList, 2,
+        #    self.playerTypes[cBox_p3.currentText()]()))
         label_p1Type = QtWidgets.QLabel(Form)
         label_p1Type.setText("Jugador 1:")
         label_p2Type = QtWidgets.QLabel(Form)
         label_p2Type.setText("Jugador 2:")
-        label_p3Type = QtWidgets.QLabel(Form)
-        label_p3Type.setText("Jugador 3:")
+
         cBox_p1 = QtWidgets.QComboBox(Form)
         cBox_p2 = QtWidgets.QComboBox(Form)
-        cBox_p3 = QtWidgets.QComboBox(Form)
-        cBoxes = (cBox_p1, cBox_p2, cBox_p3)
+
+        cBoxes = (cBox_p1, cBox_p2)
         
         if not loaded:
-            initialPlayerList = [HumanPlayer, Greedy1BotPlayer, Greedy2BotPlayer]
-            for i in range(3):
+            initialPlayerList = [HumanPlayer, Greedy1BotPlayer]
+            for i in range(2):
                 grid.addWidget(cBoxes[i], i+1, 2, 1, 2)
                 cBoxes[i].addItems(list(self.playerTypes))
                 cBoxes[i].setCurrentIndex(list(self.playerTypes.values()).index(initialPlayerList[i]))
@@ -351,15 +350,14 @@ class LoopController:
         cBox_p2.currentIndexChanged.connect(
             lambda: setItem(self.playerList, 1, self.playerTypes[cBox_p2.currentText()]()))
         
-        cBox_p3.currentIndexChanged.connect(
-            lambda: setItem(self.playerList, 2, self.playerTypes[cBox_p3.currentText()]()))
+
         
-        grid.addWidget(label_pNum, 0, 0, 1, 2)
-        grid.addWidget(rButton_2P, 0, 2)
-        grid.addWidget(rButton_3P, 0, 3)
+        #grid.addWidget(label_pNum, 0, 0, 1, 2)
+        #grid.addWidget(rButton_2P, 0, 2)
+        #grid.addWidget(rButton_3P, 0, 3)
         grid.addWidget(label_p1Type, 1, 0, 1, 2)
         grid.addWidget(label_p2Type, 2, 0, 1, 2)
-        grid.addWidget(label_p3Type, 3, 0, 1, 2)
+
         
         startButton = QtWidgets.QPushButton(Form)
         startButton.setText("Jugar")
