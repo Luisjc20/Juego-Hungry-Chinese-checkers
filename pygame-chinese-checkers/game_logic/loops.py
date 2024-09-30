@@ -22,7 +22,7 @@ class LoopController:
             self.playerTypes[i.__name__] = i
         self.playerList = [
             HumanPlayer(),
-            Greedy1BotPlayer(),
+            MinimaxBotPlayer(),
             BotPrimeroElMejor()
         ]
         pygame.event.set_allowed([QUIT, MOUSEBUTTONDOWN, MOUSEBUTTONUP])
@@ -32,7 +32,7 @@ class LoopController:
         if self.loopNum == 0:
             self.playerList = [
                 HumanPlayer(),
-                Greedy1BotPlayer(),
+                MinimaxBotPlayer(),
                 BotPrimeroElMejor()
             ]
             pygame.event.set_allowed([QUIT, MOUSEBUTTONDOWN, MOUSEBUTTONUP])
@@ -336,7 +336,7 @@ class LoopController:
         cBoxes = (cBox_p1, cBox_p2)
         
         if not loaded:
-            initialPlayerList = [HumanPlayer, Greedy1BotPlayer]
+            initialPlayerList = [HumanPlayer, MinimaxBotPlayer]
             for i in range(2):
                 grid.addWidget(cBoxes[i], i+1, 2, 1, 2)
                 cBoxes[i].addItems(list(self.playerTypes))
@@ -349,12 +349,7 @@ class LoopController:
         
         cBox_p2.currentIndexChanged.connect(
             lambda: setItem(self.playerList, 1, self.playerTypes[cBox_p2.currentText()]()))
-        
 
-        
-        #grid.addWidget(label_pNum, 0, 0, 1, 2)
-        #grid.addWidget(rButton_2P, 0, 2)
-        #grid.addWidget(rButton_3P, 0, 3)
         grid.addWidget(label_p1Type, 1, 0, 1, 2)
         grid.addWidget(label_p2Type, 2, 0, 1, 2)
 

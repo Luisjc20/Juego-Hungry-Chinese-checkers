@@ -44,89 +44,93 @@ class RandomBotPlayer(Player):
         move = random.choice(moves[coor])
         return [subj_to_obj_coor(coor, self.playerNum), subj_to_obj_coor(move, self.playerNum)]
 
-class GreedyRandomBotPlayer(Player):
-    def __init__(self):
+class MinimaxBotPlayer(Player):
+    def __init__(self, depth=3):
         super().__init__()
-    
+        self.depth = depth  # Profundidad de búsqueda
+
     def pickMove(self, g: Game):
         '''returns [start_coor, end_coor]'''
-        moves = g.allMovesDict(self.playerNum)
-        tempMoves = dict()
-        #forward
-        for coor in moves:
-            if moves[coor] != []: tempMoves[coor] = []
-            else: continue
-            for dest in moves[coor]:
-                if dest[1] > coor[1]: tempMoves[coor].append(dest)
-        for coor in list(tempMoves):
-            if tempMoves[coor] == []: del tempMoves[coor]
-        if len(tempMoves) > 0:
-            coor = random.choice(list(tempMoves))
-            move = random.choice(tempMoves[coor])
-        else:
-            #sideways
-            tempMoves.clear()
-            for coor in moves:
-                if moves[coor] != []: tempMoves[coor] = []
-                else: continue
-                for dest in moves[coor]:
-                    if dest[1] == coor[1]: tempMoves[coor].append(dest)
-            for coor in list(tempMoves):
-                if tempMoves[coor] == []: del tempMoves[coor]
-            coor = random.choice(list(tempMoves))
-            move = random.choice(tempMoves[coor])
-        return [subj_to_obj_coor(coor, self.playerNum), subj_to_obj_coor(move, self.playerNum)]
+        best_move = None
+        best_value = float('-inf')  # Inicializar con el peor valor posible para maximizar
 
-class Greedy1BotPlayer(Player):
-    '''Siempre encuentra el movimiento que mueve una pieza al cuadrado más alto'''
-    def __init__(self):
-        super().__init__()
+        moves = g.allMovesDict(self.playerNum)  # Obtener todos los movimientos posibles
+        for start, ends in moves.items():
+            for end in ends:
+                # Realizar el movimiento y evaluar su valor
+                g.makeMove(start, end)
+                move_value = self.minimax(g, self.depth - 1, False)  # Comienza como False para minimizar
+                g.undoMove()  # Deshacer movimiento
 
-    def pickMove(self, g: Game):
-        '''devuelve [start_coor, end_coor] en coordenadas objetivas'''
-        moves = g.allMovesDict(self.playerNum)
-        
-        forwardMoves = dict()
-        sidewaysMoves = dict()
-        start_coor = ()
-        end_coor = ()
-        #Movimientos hacia adelante y hacia los lados
-        for coor in moves:
-            if moves[coor] != []: forwardMoves[coor] = []; sidewaysMoves[coor] = []
-            else: continue
-            for dest in moves[coor]:
-                if dest[1] > coor[1]: forwardMoves[coor].append(dest)
-                if dest[1] == coor[1]: sidewaysMoves[coor].append(dest)
-        for coor in list(forwardMoves):
-            if forwardMoves[coor] == []: del forwardMoves[coor]
-        for coor in list(sidewaysMoves):
-            if sidewaysMoves[coor] == []: del sidewaysMoves[coor]
-        
-        
-        biggestDestY = -8
-        smallestStartY = 8
-        if len(forwardMoves) == 0:
-            start_coor = random.choice(list(sidewaysMoves))
-            end_coor = random.choice(sidewaysMoves[start_coor])
+                # Comparar y almacenar el mejor movimiento
+                if move_value > best_value:
+                    best_value = move_value
+                    best_move = [start, end]
+
+        return best_move
+
+    def minimax(self, g: Game, depth: int, is_maximizing: bool):
+        """
+        Implementa el algoritmo Minimax.
+        :param g: Estado actual del juego (Game).
+        :param depth: Profundidad de búsqueda actual.
+        :param is_maximizing: True si estamos maximizando, False si minimizando.
+        :return: Valor del movimiento.
+        """
+        if depth == 0 or g.isGameOver():
+            return self.evaluateBoard(g)
+
+        if is_maximizing:
+            max_eval = float('-inf')
+            moves = g.allMovesDict(self.playerNum)
+            for start, ends in moves.items():
+                for end in ends:
+                    g.makeMove(start, end)
+                    eval = self.minimax(g, depth - 1, False)  # Minimizar en el siguiente paso
+                    g.undoMove()
+                    max_eval = max(max_eval, eval)
+            return max_eval
         else:
-            for coor in forwardMoves:
-                for i in range(len(forwardMoves[coor])):
-                    dest = forwardMoves[coor][i]
-                    if dest[1] > biggestDestY:
-                        start_coor = coor; end_coor = dest
-                        biggestDestY = dest[1]
-                        smallestStartY = coor[1]
-                    elif dest[1] == biggestDestY:
-                        startY = coor[1]
-                        if startY < smallestStartY:
-                            start_coor = coor; end_coor = dest
-                            biggestDestY = dest[1]
-                            smallestStartY = coor[1]
-                        elif startY == smallestStartY:
-                            start_coor, end_coor = random.choice([[start_coor, end_coor], [coor, dest]])
-                            biggestDestY = end_coor[1]
-                            smallestStartY = start_coor[1]
-        return [subj_to_obj_coor(start_coor, self.playerNum), subj_to_obj_coor(end_coor, self.playerNum)]
+            min_eval = float('inf')
+            moves = g.allMovesDict(self.getOpponentNum())  # Obtener movimientos del oponente
+            for start, ends in moves.items():
+                for end in ends:
+                    g.makeMove(start, end)
+                    eval = self.minimax(g, depth - 1, True)  # Maximizar en el siguiente paso
+                    g.undoMove()
+                    min_eval = min(min_eval, eval)
+            return min_eval
+
+    def evaluateBoard(self, g: Game):
+        """
+        Función de evaluación del tablero.
+        Debe devolver un valor numérico que representa la ventaja del bot en el estado actual del juego.
+        :param g: Estado actual del juego (Game).
+        :return: Valor numérico que representa el estado del juego.
+        """
+        # Aquí se define una simple función de evaluación:
+        # +10 por cada ficha propia más cerca del triángulo opuesto,
+        # -10 por cada ficha enemiga más cerca de nuestro triángulo inicial.
+        value = 0
+        my_fichas = g.getPlayerPositions(self.playerNum)
+        opponent_fichas = g.getPlayerPositions(self.getOpponentNum())
+
+        # Evaluar las posiciones de nuestras fichas
+        for ficha in my_fichas:
+            value += (ficha[1] - 0)  # Valoración simple de distancia al centro
+
+        # Evaluar las posiciones de las fichas enemigas
+        for ficha in opponent_fichas:
+            value -= (ficha[1] - 0)  # Penalizar posiciones enemigas más cercanas a nuestro lado
+
+        return value
+
+    def getOpponentNum(self):
+        """
+        Retorna el número del oponente.
+        :return: Número del oponente.
+        """
+        return 1 if self.playerNum == 2 else 2
 
 class BotPrimeroElMejor(Player):
     '''Siempre encuentra el primer movimiento disponible, priorizando los movimientos hacia delante.'''
